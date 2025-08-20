@@ -131,7 +131,7 @@ out/
 target/
 
 # Logs
-logs
+logs/
 *.log
 
 # Firebase
