@@ -5,9 +5,6 @@ FROM node:20-alpine AS base
 # Set working directory
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
-
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
@@ -22,7 +19,7 @@ RUN npm ci --include=dev
 COPY . .
 USER nextjs
 EXPOSE 3000
-CMD ["dumb-init", "npm", "run", "dev"]
+CMD ["npm", "run", "dev"]
 
 # Dependencies stage
 FROM base AS dependencies
@@ -40,9 +37,6 @@ RUN npm prune --production
 
 # Production stage
 FROM node:20-alpine AS production
-
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -71,7 +65,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node --version || exit 1
 
 # Start the application
-CMD ["dumb-init", "node", "dist/index.js"]
+CMD ["node", "dist/index.js"]
 
 # Metadata
 LABEL maintainer="Pathfinder Team"
