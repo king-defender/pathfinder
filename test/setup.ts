@@ -45,4 +45,3 @@ jest.mock('firebase-admin', () => ({
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.FIREBASE_PROJECT_ID = 'test-project';
-process.env.BYPASS_AUTH = 'true';
