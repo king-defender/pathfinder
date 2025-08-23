@@ -1,3 +1,4 @@
+
 # Multi-stage Docker build for Node.js application
 # Use the official Node.js 20 LTS Alpine image for smaller size and better security
 FROM node:20-alpine AS base
@@ -45,6 +46,9 @@ RUN adduser -S nextjs -u 1001
 # Set working directory
 WORKDIR /app
 
+# Install security updates and curl for healthcheck
+RUN apk update && apk upgrade && apk add --no-cache curl
+
 # Copy built application and dependencies
 COPY --from=build --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
@@ -61,8 +65,8 @@ USER nextjs
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node --version || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # Start the application
 CMD ["node", "dist/index.js"]

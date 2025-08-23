@@ -1,117 +1,140 @@
 # Contributing to Pathfinder
 
-Thank you for your interest in contributing to Pathfinder! We welcome contributions from the community and appreciate your help in making this project better.
+Thank you for your interest in contributing to Pathfinder! This document provides guidelines and information for contributors.
 
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
-- [Development Setup](#development-setup)
-- [Making Changes](#making-changes)
+- [Development Workflow](#development-workflow)
 - [Coding Standards](#coding-standards)
 - [Testing](#testing)
-- [Submitting Changes](#submitting-changes)
-- [Release Process](#release-process)
+- [Pull Request Process](#pull-request-process)
+- [Issue Reporting](#issue-reporting)
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+By participating in this project, you agree to abide by our Code of Conduct:
+
+- Be respectful and inclusive
+- Use welcoming and inclusive language
+- Be collaborative and constructive
+- Focus on what is best for the community
+- Show empathy towards other community members
 
 ## Getting Started
 
-1. Fork the repository on GitHub
-2. Clone your fork locally
-3. Set up the development environment
-4. Create a feature branch
-5. Make your changes
-6. Test your changes
-7. Submit a pull request
-
-## Development Setup
-
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or pnpm
-- Docker and Docker Compose (optional)
+- Node.js (v18 or higher)
+- npm or yarn
 - Git
+- Docker (for containerized development)
 
-### Setup Steps
+### Setting Up Development Environment
 
-```bash
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/pathfinder.git
-cd pathfinder
+1. Fork the repository
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/your-username/pathfinder.git
+   cd pathfinder
+   ```
 
-# Install dependencies
-npm install
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-# Copy environment variables
-cp .env.example .env
+4. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-# Start development environment
-npm run dev
+5. Start development server:
+   ```bash
+   npm run dev
+   ```
 
-# Or using Docker
-docker-compose up
-```
+## Development Workflow
 
-### Environment Configuration
+### Branch Naming Convention
 
-Make sure to configure your `.env` file with appropriate values:
+- `feature/description` - for new features
+- `fix/description` - for bug fixes
+- `docs/description` - for documentation updates
+- `refactor/description` - for code refactoring
+- `test/description` - for test improvements
 
-- Firebase configuration for authentication
-- Database connection strings
-- API keys for external services
+### Commit Message Format
 
-## Making Changes
-
-### Branch Naming
-
-Use descriptive branch names:
-- `feature/add-new-algorithm`
-- `fix/memory-leak-in-pathfinding`
-- `docs/update-api-documentation`
-- `refactor/improve-error-handling`
-
-### Commit Messages
-
-Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
 ```
-feat: add A* algorithm implementation
-fix: resolve memory leak in pathfinding service
-docs: update API documentation for new endpoints
-test: add unit tests for algorithm validation
-refactor: improve error handling in route handlers
-style: fix formatting and linting issues
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Types:
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools
+
+Examples:
+```
+feat(auth): add JWT token validation
+fix(api): resolve path calculation edge case
+docs: update API documentation
+test(algorithms): add unit tests for A* algorithm
 ```
 
 ## Coding Standards
 
-### TypeScript
+### JavaScript/TypeScript
 
-- Use TypeScript for all new code
-- Maintain strict type checking
-- Prefer interfaces over type aliases for object shapes
-- Use proper JSDoc comments for public APIs
+- Use ES6+ features where appropriate
+- Follow ESLint configuration
+- Use meaningful variable and function names
+- Write self-documenting code with minimal comments
+- Prefer functional programming patterns
 
 ### Code Style
 
-- Follow the existing ESLint and Prettier configurations
-- Use meaningful variable and function names
-- Keep functions small and focused (max 50 lines)
-- Maximum complexity of 10 per function
-- Use async/await instead of Promises when possible
+- Use 2 spaces for indentation
+- Use semicolons
+- Use single quotes for strings
+- Max line length: 100 characters
+- Use trailing commas in multiline structures
 
-### Security
+### Documentation
 
-- Never commit secrets or API keys
-- Validate all user inputs
-- Use parameterized queries for database operations
-- Follow OWASP security guidelines
+- Document all public APIs
+- Include JSDoc comments for functions and classes
+- Update README for significant changes
+- Maintain changelog for releases
 
 ## Testing
+
+### Test Categories
+
+1. **Unit Tests**: Test individual functions and modules
+2. **Integration Tests**: Test component interactions
+3. **End-to-End Tests**: Test complete user workflows
+
+### Writing Tests
+
+- Write tests for all new features
+- Maintain or improve test coverage
+- Use descriptive test names
+- Follow AAA pattern (Arrange, Act, Assert)
 
 ### Running Tests
 
@@ -119,145 +142,142 @@ style: fix formatting and linting issues
 # Run all tests
 npm test
 
-# Run with coverage
-npm run test:coverage
-
-# Run E2E tests
-npm run test:e2e
-
 # Run specific test file
-npm test -- path/to/test.spec.ts
+npm test -- path/to/test/file
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
 ```
 
-### Writing Tests
+## Pull Request Process
 
-- Write unit tests for all new functions
-- Include integration tests for API endpoints
-- Add E2E tests for critical user workflows
-- Aim for >80% code coverage
-- Use descriptive test names that explain the scenario
+1. **Create a Feature Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-### Test Structure
+2. **Make Your Changes**
+   - Follow coding standards
+   - Write tests for new functionality
+   - Update documentation as needed
 
-```typescript
-describe('PathfindingService', () => {
-  describe('findPath', () => {
-    it('should find shortest path using A* algorithm', async () => {
-      // Arrange
-      const start = { lat: 0, lng: 0 };
-      const end = { lat: 1, lng: 1 };
-      
-      // Act
-      const result = await pathfindingService.findPath(start, end, 'astar');
-      
-      // Assert
-      expect(result.path).toBeDefined();
-      expect(result.distance).toBeGreaterThan(0);
-    });
-  });
-});
-```
+3. **Test Your Changes**
+   ```bash
+   npm run lint
+   npm test
+   npm run build
+   ```
 
-## Submitting Changes
+4. **Commit Your Changes**
+   ```bash
+   git add .
+   git commit -m "feat: add your feature description"
+   ```
 
-### Pull Request Process
+5. **Push to Your Fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-1. **Update Documentation**: Ensure README, API docs, and comments are updated
-2. **Add Tests**: Include tests for new functionality
-3. **Check CI**: Ensure all CI checks pass
-4. **Small PRs**: Keep pull requests focused and small
-5. **Link Issues**: Reference any related issues in the PR description
+6. **Create Pull Request**
+   - Use the PR template
+   - Provide clear description of changes
+   - Reference related issues
+   - Request review from maintainers
 
-### Pull Request Template
+### Pull Request Requirements
 
-```markdown
-## Description
-Brief description of changes
-
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-
-## Testing
-- [ ] Unit tests pass
-- [ ] Integration tests pass
-- [ ] E2E tests pass
-- [ ] Manual testing completed
-
-## Checklist
+- [ ] Tests pass locally
 - [ ] Code follows style guidelines
-- [ ] Self-review completed
-- [ ] Documentation updated
+- [ ] Documentation updated if needed
+- [ ] Changelog updated for significant changes
 - [ ] No breaking changes (or clearly documented)
-```
+- [ ] Self-review completed
 
-### Review Process
+## Issue Reporting
 
-- All submissions require review from maintainers
-- Reviewers will check code quality, tests, and documentation
-- Address feedback promptly and professionally
-- Squash commits before merging (if requested)
+### Bug Reports
 
-## Development Workflow
+Use the bug report template and include:
 
-### Local Development
+- Clear, descriptive title
+- Steps to reproduce
+- Expected vs actual behavior
+- Environment details (OS, Node.js version, etc.)
+- Error messages or logs
+- Screenshots if applicable
+
+### Feature Requests
+
+Use the feature request template and include:
+
+- Clear description of the feature
+- Use case and motivation
+- Proposed implementation (if applicable)
+- Alternative solutions considered
+
+### Security Issues
+
+Do not create public issues for security vulnerabilities. Instead:
+
+1. Email the maintainers directly
+2. Provide detailed description
+3. Include steps to reproduce
+4. Allow time for fix before disclosure
+
+## Development Resources
+
+### Useful Commands
 
 ```bash
-# Start development server
-npm run dev
+# Development
+npm run dev              # Start development server
+npm run build           # Build for production
+npm run start           # Start production server
 
-# Run linting
-npm run lint
+# Code Quality
+npm run lint            # Run linter
+npm run lint:fix        # Fix linting issues
+npm run format          # Format code
+npm run type-check      # TypeScript type checking
 
-# Fix linting issues
-npm run lint --fix
+# Testing
+npm run test            # Run tests
+npm run test:watch      # Watch mode
+npm run test:coverage   # Coverage report
+npm run test:e2e        # End-to-end tests
 
-# Format code
-npm run format
+# Database
+npm run db:migrate      # Run migrations
+npm run db:seed         # Seed database
+npm run db:reset        # Reset database
 
-# Type checking
-npm run type-check
+# Docker
+npm run docker:build    # Build Docker image
+npm run docker:run      # Run Docker container
+npm run docker:test     # Run tests in Docker
 ```
 
-### Docker Development
+### Project Structure
 
-```bash
-# Start all services
-docker-compose up
-
-# Start specific service
-docker-compose up app postgres redis
-
-# View logs
-docker-compose logs -f app
-
-# Rebuild after changes
-docker-compose up --build
+```
+pathfinder/
+├── src/                 # Source code
+├── tests/              # Test files
+├── docs/               # Documentation
+├── deployment/         # Deployment configs
+├── scripts/            # Build and utility scripts
+└── .github/            # GitHub templates and workflows
 ```
 
-## Release Process
+## Questions and Support
 
-Releases are handled by maintainers:
-
-1. Version bump following [Semantic Versioning](https://semver.org/)
-2. Update CHANGELOG.md
-3. Create release tag
-4. Automated deployment via GitHub Actions
-
-## Getting Help
-
-- 📖 Check the [documentation](docs/)
-- 🐛 [Open an issue](https://github.com/king-defender/pathfinder/issues)
-- 💬 [Start a discussion](https://github.com/king-defender/pathfinder/discussions)
-- 📧 Email: contributors@pathfinder.dev
-
-## Recognition
-
-Contributors will be recognized in:
-- README.md contributors section
-- Release notes
-- Annual contributor spotlight
+- Check existing issues and discussions
+- Create new issue for bugs or feature requests
+- Join community discussions
+- Contact maintainers for urgent matters
 
 Thank you for contributing to Pathfinder! 🚀

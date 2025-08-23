@@ -7,9 +7,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -21,7 +21,6 @@
     "exactOptionalPropertyTypes": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-    "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "baseUrl": "./",
@@ -36,11 +35,14 @@
     }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
+    "build",
+    "coverage",
     "test",
     "**/*.test.ts",
     "**/*.spec.ts"

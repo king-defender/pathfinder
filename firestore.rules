@@ -1,100 +1,159 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions for authentication and authorization
+    
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
     
     function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    function hasRole(role) {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
     function isAdmin() {
-      return hasRole('admin');
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
     }
     
     function isValidUser() {
       return isAuthenticated() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid));
+             request.auth.uid != null &&
+             request.auth.token.email_verified == true;
     }
     
-    function isValidPath(data) {
-      return data.keys().hasAll(['start', 'end', 'algorithm']) &&
-             data.start.keys().hasAll(['lat', 'lng']) &&
-             data.end.keys().hasAll(['lat', 'lng']) &&
-             data.start.lat is number && data.start.lng is number &&
-             data.end.lat is number && data.end.lng is number &&
-             data.algorithm is string &&
-             data.algorithm in ['astar', 'dijkstra', 'bfs'];
+    function isValidPathData() {
+      return request.resource.data.keys().hasAll(['start', 'end', 'algorithm']) &&
+             request.resource.data.start is map &&
+             request.resource.data.end is map &&
+             request.resource.data.start.keys().hasAll(['lat', 'lng']) &&
+             request.resource.data.end.keys().hasAll(['lat', 'lng']) &&
+             request.resource.data.start.lat is number &&
+             request.resource.data.start.lng is number &&
+             request.resource.data.end.lat is number &&
+             request.resource.data.end.lng is number &&
+             request.resource.data.algorithm in ['astar', 'dijkstra', 'bfs'];
     }
     
-    // Users collection - user profiles and settings
+    // User profiles
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && 
-                       request.resource.data.keys().hasAll(['email', 'role', 'createdAt']) &&
-                       request.resource.data.role == 'user' &&
-                       request.resource.data.email == request.auth.token.email;
-      allow update: if isOwner(userId) && 
-                       !('role' in request.resource.data.diff(resource.data).affectedKeys()) ||
-                       isAdmin();
-      allow delete: if isAdmin();
+      allow read, write: if isOwner(userId);
+      allow read: if isAdmin();
+      
+      // User creation rules
+      allow create: if isAuthenticated() &&
+                   request.auth.uid == userId &&
+                   request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+                   request.resource.data.email == request.auth.token.email &&
+                   request.resource.data.createdAt == request.time;
     }
     
-    // Paths collection - path calculation results
+    // Path calculations
     match /paths/{pathId} {
-      allow read: if isValidUser() && 
-                     (isOwner(resource.data.userId) || isAdmin());
-      allow create: if isValidUser() && 
-                       isOwner(request.resource.data.userId) &&
-                       request.resource.data.keys().hasAll(['userId', 'start', 'end', 'algorithm', 'createdAt']) &&
-                       isValidPath(request.resource.data);
-      allow update: if false; // Paths are immutable once created
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
-    }
-    
-    // Path history collection - user's calculation history
-    match /users/{userId}/pathHistory/{historyId} {
-      allow read, create: if isOwner(userId);
-      allow update: if false; // History is immutable
-      allow delete: if isOwner(userId);
-    }
-    
-    // Analytics collection - system analytics (admin only)
-    match /analytics/{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // System configuration (admin only)
-    match /config/{configId} {
-      allow read: if isValidUser();
+      // Anyone can read public paths
+      allow read: if resource.data.isPublic == true;
+      
+      // Users can read their own paths
+      allow read: if isOwner(resource.data.userId);
+      
+      // Admins can read all paths
+      allow read: if isAdmin();
+      
+      // Users can create paths with valid data
+      allow create: if isValidUser() &&
+                   isValidPathData() &&
+                   request.resource.data.userId == request.auth.uid &&
+                   request.resource.data.createdAt == request.time;
+      
+      // Users can update their own paths
+      allow update: if isOwner(resource.data.userId) &&
+                   request.resource.data.userId == resource.data.userId;
+      
+      // Users can delete their own paths
+      allow delete: if isOwner(resource.data.userId);
+      
+      // Admins can do everything
       allow write: if isAdmin();
     }
     
-    // Rate limiting collection
-    match /rateLimits/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+    // Path history (read-only for users)
+    match /pathHistory/{historyId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isValidUser() &&
+                   request.resource.data.userId == request.auth.uid &&
+                   request.resource.data.createdAt == request.time;
     }
     
-    // API keys collection (admin only)
-    match /apiKeys/{keyId} {
+    // User analytics (append-only)
+    match /analytics/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      
+      match /events/{eventId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) &&
+                     request.resource.data.timestamp == request.time;
+      }
+    }
+    
+    // API usage tracking
+    match /usage/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    
+    // System collections (admin only)
+    match /admin/{document=**} {
       allow read, write: if isAdmin();
     }
     
-    // Audit logs (admin read-only)
-    match /auditLogs/{logId} {
-      allow read: if isAdmin();
-      allow write: if false; // Written by server-side functions only
+    match /system/{document=**} {
+      allow read, write: if isAdmin();
     }
     
-    // Default deny rule
+    match /config/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Public data (read-only)
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Algorithm performance data
+    match /performance/{algorithmId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /metrics/{metricId} {
+        allow read: if isAuthenticated();
+        allow create: if isValidUser();
+      }
+    }
+    
+    // Rate limiting data
+    match /rateLimits/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Feedback and reports
+    match /feedback/{feedbackId} {
+      allow create: if isValidUser() &&
+                   request.resource.data.userId == request.auth.uid &&
+                   request.resource.data.createdAt == request.time;
+      allow read: if isAdmin();
+    }
+    
+    // Error logs (system use only)
+    match /errors/{errorId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+    
+    // Default deny rule for unlisted collections
     match /{document=**} {
       allow read, write: if false;
     }
