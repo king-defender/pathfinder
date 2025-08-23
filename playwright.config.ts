@@ -76,6 +76,6 @@ export default defineConfig({
     command: 'npm run build && npm run start:test',
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 60 * 1000, // Reduced timeout
   },
 });
