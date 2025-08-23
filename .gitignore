@@ -1,13 +1,37 @@
-dist
-ehthumbs.db
-Thumbs.db
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
 dist/
-target/
-tmp/
-temp/
-tmp/
-temp/
+build/
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Test outputs
 test-results/
 playwright-report/
 test-results.xml
 coverage.xml
+
+# Temporary files
+tmp/
+temp/
+*.log
+.DS_Store
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
