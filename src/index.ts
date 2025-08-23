@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import { healthRoutes } from './api/routes/healthRoutes';
+// Import auth middleware to ensure Firebase is initialized
+import './middleware/auth';
 
 // Load environment variables
 dotenv.config();
@@ -33,15 +36,8 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/health', (_req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version ?? '1.0.0',
-    environment: process.env.NODE_ENV ?? 'development',
-  });
-});
+// Health check endpoints
+app.use('/health', healthRoutes);
 
 // API routes placeholder
 app.get('/api', (_req, res) => {
@@ -50,6 +46,7 @@ app.get('/api', (_req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      healthDetailed: '/health/detailed',
       pathfinding: '/api/path/*',
     },
   });

@@ -33,7 +33,7 @@ router.post('/find',
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw createError('Validation failed: ' + errors.array().map(e => e.msg).join(', '), 400);
+      throw createError(`Validation failed: ${  errors.array().map(e => e.msg).join(', ')}`, 400);
     }
 
     const { start, end, algorithm, options = {} } = req.body;
@@ -63,7 +63,7 @@ router.post('/batch',
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw createError('Validation failed: ' + errors.array().map(e => e.msg).join(', '), 400);
+      throw createError(`Validation failed: ${  errors.array().map(e => e.msg).join(', ')}`, 400);
     }
 
     const { requests } = req.body;
