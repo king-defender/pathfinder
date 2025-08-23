@@ -5,13 +5,21 @@ import { createError } from './errorHandler';
 // Initialize Firebase Admin (should be done once in app startup)
 if (!admin.apps.length) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
-  if (!projectId) {
+  
+  if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && !projectId) {
+    // Initialize with mock configuration for development/testing
+    console.log('Firebase running in development/test mode with mock configuration');
+    admin.initializeApp({
+      projectId: 'pathfinder-dev-mock'
+    });
+  } else if (!projectId) {
     throw new Error('FIREBASE_PROJECT_ID environment variable is required');
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      projectId
+    });
   }
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId
-  });
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -33,8 +41,8 @@ export const authMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Skip auth in test environment if bypass is enabled
-    if (process.env.NODE_ENV === 'test' && process.env.BYPASS_AUTH === 'true') {
+    // Skip auth in test environment or development if bypass is enabled
+    if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && process.env.BYPASS_AUTH === 'true') {
       req.user = {
         uid: 'dev-user',
         email: 'dev@example.com',
