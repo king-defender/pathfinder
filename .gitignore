@@ -1,10 +1,9 @@
 dist
+dist/
+node_modules/
 ehthumbs.db
 Thumbs.db
-dist/
 target/
-tmp/
-temp/
 tmp/
 temp/
 test-results/
