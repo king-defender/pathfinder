@@ -9,7 +9,7 @@ describe('Health Check', () => {
       .expect(200);
 
     expect(response.body).toMatchObject({
-      status: 'OK',
+      status: 'healthy',
       timestamp: expect.any(String),
       version: expect.any(String),
       environment: 'test',
