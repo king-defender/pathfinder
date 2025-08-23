@@ -48,17 +48,17 @@ export class PathfindingService {
     const startTime = Date.now();
 
     switch (algorithm) {
-      case 'astar':
-        pathResult = await this.astar.findPath(start, end, options);
-        break;
-      case 'dijkstra':
-        pathResult = await this.dijkstra.findPath(start, end, options);
-        break;
-      case 'bfs':
-        pathResult = await this.bfs.findPath(start, end, options);
-        break;
-      default:
-        throw createError(`Unsupported algorithm: ${algorithm}`, 400);
+    case 'astar':
+      pathResult = await this.astar.findPath(start, end, options);
+      break;
+    case 'dijkstra':
+      pathResult = await this.dijkstra.findPath(start, end, options);
+      break;
+    case 'bfs':
+      pathResult = await this.bfs.findPath(start, end, options);
+      break;
+    default:
+      throw createError(`Unsupported algorithm: ${algorithm}`, 400);
     }
 
     const duration = Date.now() - startTime;

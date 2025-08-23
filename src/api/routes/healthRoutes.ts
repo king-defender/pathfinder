@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/errorHandler';
+import admin from 'firebase-admin';
+import { createClient } from 'redis';
 
 const router = Router();
 
@@ -53,11 +55,12 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
 async function checkDatabase(): Promise<{ status: string; latency?: number; error?: string }> {
   try {
     const start = Date.now();
-    // TODO: Add actual database health check
-    // For now, simulate a check
-    await new Promise(resolve => setTimeout(resolve, 10));
-    const latency = Date.now() - start;
     
+    // Check Firestore connection by performing a simple read operation
+    const testCollection = admin.firestore().collection('_health_check');
+    await testCollection.limit(1).get();
+    
+    const latency = Date.now() - start;
     return { status: 'healthy', latency };
   } catch (error) {
     return { 
@@ -70,21 +73,27 @@ async function checkDatabase(): Promise<{ status: string; latency?: number; erro
 async function checkCache(): Promise<{ status: string; latency?: number; error?: string }> {
   try {
     const start = Date.now();
-    // TODO: Add actual Redis health check
-    // For now, simulate a check
-    await new Promise(resolve => setTimeout(resolve, 5));
-    const latency = Date.now() - start;
     
+    // Check Redis connection
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const redis = createClient({ url: redisUrl });
+    
+    // Connect and ping Redis
+    await redis.connect();
+    await redis.ping();
+    await redis.disconnect();
+    
+    const latency = Date.now() - start;
     return { status: 'healthy', latency };
   } catch (error) {
     return { 
       status: 'unhealthy', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+      error: error instanceof Error ? error.message : 'Redis connection failed' 
     };
   }
 }
 
-async function checkExternalAPIs(): Promise<{ status: string; services: Record<string, any> }> {
+async function checkExternalAPIs(): Promise<{ status: string; services: Record<string, { status: string; error?: string }> }> {
   const services = {
     firebase: await checkFirebase(),
     maps: await checkMapsAPI()
@@ -100,24 +109,47 @@ async function checkExternalAPIs(): Promise<{ status: string; services: Record<s
 
 async function checkFirebase(): Promise<{ status: string; error?: string }> {
   try {
-    // TODO: Add actual Firebase health check
+    // Check Firebase Admin connectivity by testing authentication service
+    await admin.auth().listUsers(1);
+    
     return { status: 'healthy' };
   } catch (error) {
     return { 
       status: 'unhealthy', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+      error: error instanceof Error ? error.message : 'Firebase connection failed' 
     };
   }
 }
 
 async function checkMapsAPI(): Promise<{ status: string; error?: string }> {
   try {
-    // TODO: Add actual Maps API health check
-    return { status: 'healthy' };
+    const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+    
+    if (!googleMapsApiKey) {
+      return { 
+        status: 'unhealthy', 
+        error: 'Google Maps API key not configured' 
+      };
+    }
+    
+    // Test Google Maps API with a simple geocoding request
+    const testUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=${googleMapsApiKey}`;
+    
+    const response = await fetch(testUrl);
+    const data = await response.json();
+    
+    if (data.status === 'OK' || data.status === 'ZERO_RESULTS') {
+      return { status: 'healthy' };
+    } else {
+      return { 
+        status: 'unhealthy', 
+        error: `Maps API error: ${data.status}` 
+      };
+    }
   } catch (error) {
     return { 
       status: 'unhealthy', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+      error: error instanceof Error ? error.message : 'Maps API connection failed' 
     };
   }
 }

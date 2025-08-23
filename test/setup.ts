@@ -15,7 +15,8 @@ vi.mock('firebase-admin', () => ({
       email_verified: true
     }),
     deleteUser: vi.fn().mockResolvedValue(undefined),
-    setCustomUserClaims: vi.fn().mockResolvedValue(undefined)
+    setCustomUserClaims: vi.fn().mockResolvedValue(undefined),
+    listUsers: vi.fn().mockResolvedValue({ users: [] })
   }),
   firestore: () => ({
     collection: vi.fn().mockReturnThis(),
@@ -40,6 +41,15 @@ vi.mock('firebase-admin', () => ({
       serverTimestamp: vi.fn()
     }
   })
+}));
+
+// Mock Redis for testing
+vi.mock('redis', () => ({
+  createClient: vi.fn(() => ({
+    connect: vi.fn().mockResolvedValue(undefined),
+    ping: vi.fn().mockResolvedValue('PONG'),
+    disconnect: vi.fn().mockResolvedValue(undefined)
+  }))
 }));
 
 // Set test environment variables
