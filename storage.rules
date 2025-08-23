@@ -1,0 +1,94 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB max
+    }
+    
+    // User profile images and data
+    match /users/{userId}/profile/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) && isValidImageFile() && isValidSize();
+    }
+    
+    // User uploaded path visualization files
+    match /users/{userId}/paths/{pathId}/{allPaths=**} {
+      allow read: if isOwner(userId) || 
+                     (resource.metadata.isPublic == true) ||
+                     isAdmin();
+      allow write: if isOwner(userId) && isValidSize();
+    }
+    
+    // Path calculation results and exports
+    match /paths/{pathId}/exports/{allPaths=**} {
+      allow read: if isAuthenticated() && 
+                     (resource.metadata.owner == request.auth.uid ||
+                      resource.metadata.isPublic == true ||
+                      isAdmin());
+      allow write: if isAuthenticated() && 
+                      (resource.metadata.owner == request.auth.uid || isAdmin());
+    }
+    
+    // Algorithm visualization and debug files
+    match /algorithms/{algorithmId}/visualizations/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Public assets and static files
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // System backups and administrative files
+    match /system/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Temporary uploads (auto-deleted after 24 hours)
+    match /temp/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId) && isValidSize();
+    }
+    
+    // Analytics and performance data exports
+    match /analytics/{userId}/exports/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Application logs and debug files (admin only)
+    match /logs/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // User data exports (GDPR compliance)
+    match /exports/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Default deny rule
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
