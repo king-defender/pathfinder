@@ -1,28 +1,28 @@
 // Test setup file
-import 'jest';
+import { vi } from 'vitest';
 
 // Mock Firebase Admin SDK for testing
-jest.mock('firebase-admin', () => ({
+vi.mock('firebase-admin', () => ({
   apps: [],
-  initializeApp: jest.fn(),
+  initializeApp: vi.fn(),
   credential: {
-    applicationDefault: jest.fn()
+    applicationDefault: vi.fn()
   },
   auth: () => ({
-    verifyIdToken: jest.fn().mockResolvedValue({
+    verifyIdToken: vi.fn().mockResolvedValue({
       uid: 'test-user',
       email: 'test@example.com',
       email_verified: true
     }),
-    deleteUser: jest.fn().mockResolvedValue(undefined),
-    setCustomUserClaims: jest.fn().mockResolvedValue(undefined)
+    deleteUser: vi.fn().mockResolvedValue(undefined),
+    setCustomUserClaims: vi.fn().mockResolvedValue(undefined)
   }),
   firestore: () => ({
-    collection: jest.fn().mockReturnThis(),
-    doc: jest.fn().mockReturnThis(),
-    add: jest.fn().mockResolvedValue({ id: 'test-doc-id' }),
-    set: jest.fn().mockResolvedValue(undefined),
-    get: jest.fn().mockResolvedValue({
+    collection: vi.fn().mockReturnThis(),
+    doc: vi.fn().mockReturnThis(),
+    add: vi.fn().mockResolvedValue({ id: 'test-doc-id' }),
+    set: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn().mockResolvedValue({
       exists: true,
       data: () => ({
         userId: 'test-user',
@@ -30,14 +30,14 @@ jest.mock('firebase-admin', () => ({
         role: 'user'
       })
     }),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
-    where: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    offset: jest.fn().mockReturnThis(),
+    update: vi.fn().mockResolvedValue(undefined),
+    delete: vi.fn().mockResolvedValue(undefined),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    offset: vi.fn().mockReturnThis(),
     FieldValue: {
-      serverTimestamp: jest.fn()
+      serverTimestamp: vi.fn()
     }
   })
 }));

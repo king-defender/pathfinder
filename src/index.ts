@@ -82,11 +82,13 @@ app.use(
   }
 );
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Pathfinder server running on port ${PORT}`);
-  console.log(`📖 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔧 Environment: ${process.env.NODE_ENV ?? 'development'}`);
-});
+// Start server only when this file is run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Pathfinder server running on port ${PORT}`);
+    console.log(`📖 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔧 Environment: ${process.env.NODE_ENV ?? 'development'}`);
+  });
+}
 
 export default app;
