@@ -308,10 +308,15 @@ const upload = multer({
 ### Environment Security
 
 ```bash
+# Test environment (only environment where BYPASS_AUTH is allowed)
+export NODE_ENV=test
+export DEBUG=true
+export BYPASS_AUTH=true  # Only in test environment for security!
+
 # Development environment
 export NODE_ENV=development
 export DEBUG=true
-export BYPASS_AUTH=true  # Only in development!
+export BYPASS_AUTH=false  # Security: Auth bypass not allowed in development
 
 # Production environment
 export NODE_ENV=production
