@@ -1,0 +1,96 @@
+{
+  "name": "pathfinder",
+  "version": "1.0.0",
+  "description": "A modern, efficient pathfinding application for real-world routing and navigation challenges",
+  "main": "dist/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "lint": "eslint src --ext .ts,.tsx --fix",
+    "lint:check": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "security:audit": "npm audit --audit-level=moderate",
+    "deps:update": "npx npm-check-updates -u",
+    "prepare": "husky install",
+    "docker:build": "docker build -t pathfinder .",
+    "docker:run": "docker run -p 3000:3000 pathfinder"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4",
+    "dotenv": "^16.3.1",
+    "firebase-admin": "^11.11.1",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
+    "winston": "^3.11.0",
+    "redis": "^4.6.11",
+    "@google-cloud/firestore": "^7.1.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.5",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^5.3.3",
+    "tsx": "^4.6.2",
+    "tsc-alias": "^1.8.8",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "prettier": "^3.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "vitest": "^1.1.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "playwright": "^1.40.1",
+    "@playwright/test": "^1.40.1",
+    "supertest": "^6.3.3",
+    "@types/supertest": "^6.0.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "pathfinding",
+    "routing",
+    "navigation",
+    "algorithms",
+    "typescript",
+    "express",
+    "firebase",
+    "api"
+  ],
+  "author": "Pathfinder Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/king-defender/pathfinder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/king-defender/pathfinder/issues"
+  },
+  "homepage": "https://github.com/king-defender/pathfinder#readme"
+}

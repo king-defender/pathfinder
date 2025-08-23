@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isValidUser() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    function isValidPath(data) {
+      return data.keys().hasAll(['start', 'end', 'algorithm']) &&
+             data.start.keys().hasAll(['lat', 'lng']) &&
+             data.end.keys().hasAll(['lat', 'lng']) &&
+             data.start.lat is number && data.start.lng is number &&
+             data.end.lat is number && data.end.lng is number &&
+             data.algorithm is string &&
+             data.algorithm in ['astar', 'dijkstra', 'bfs'];
+    }
+    
+    // Users collection - user profiles and settings
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                       request.resource.data.keys().hasAll(['email', 'role', 'createdAt']) &&
+                       request.resource.data.role == 'user' &&
+                       request.resource.data.email == request.auth.token.email;
+      allow update: if isOwner(userId) && 
+                       !('role' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                       isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Paths collection - path calculation results
+    match /paths/{pathId} {
+      allow read: if isValidUser() && 
+                     (isOwner(resource.data.userId) || isAdmin());
+      allow create: if isValidUser() && 
+                       isOwner(request.resource.data.userId) &&
+                       request.resource.data.keys().hasAll(['userId', 'start', 'end', 'algorithm', 'createdAt']) &&
+                       isValidPath(request.resource.data);
+      allow update: if false; // Paths are immutable once created
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Path history collection - user's calculation history
+    match /users/{userId}/pathHistory/{historyId} {
+      allow read, create: if isOwner(userId);
+      allow update: if false; // History is immutable
+      allow delete: if isOwner(userId);
+    }
+    
+    // Analytics collection - system analytics (admin only)
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // System configuration (admin only)
+    match /config/{configId} {
+      allow read: if isValidUser();
+      allow write: if isAdmin();
+    }
+    
+    // Rate limiting collection
+    match /rateLimits/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+    
+    // API keys collection (admin only)
+    match /apiKeys/{keyId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Audit logs (admin read-only)
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Written by server-side functions only
+    }
+    
+    // Default deny rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
