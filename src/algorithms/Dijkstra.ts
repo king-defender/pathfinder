@@ -58,7 +58,9 @@ export class DijkstraAlgorithm implements PathfindingAlgorithm {
     for (let i = 1; i < path.length; i++) {
       const prev = path[i - 1];
       const curr = path[i];
-      totalDistance += this.haversineDistance(prev, curr);
+      if (prev && curr) {
+        totalDistance += this.haversineDistance(prev, curr);
+      }
     }
     
     return totalDistance;

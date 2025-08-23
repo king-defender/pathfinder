@@ -111,6 +111,10 @@ router.get('/:pathId',
     const { pathId } = req.params;
     const userId = req.user!.uid;
 
+    if (!pathId) {
+      throw createError('Path ID is required', 400);
+    }
+
     const path = await pathfindingService.getPath(pathId, userId);
     
     if (!path) {
@@ -129,6 +133,10 @@ router.delete('/:pathId',
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { pathId } = req.params;
     const userId = req.user!.uid;
+
+    if (!pathId) {
+      throw createError('Path ID is required', 400);
+    }
 
     await pathfindingService.deletePath(pathId, userId);
 

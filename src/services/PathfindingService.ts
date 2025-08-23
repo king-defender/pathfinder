@@ -89,7 +89,7 @@ export class PathfindingService {
       distance: pathResult.distance,
       duration,
       algorithm,
-      metadata: pathResult.metadata
+      ...(pathResult.metadata && { metadata: pathResult.metadata })
     };
   }
 

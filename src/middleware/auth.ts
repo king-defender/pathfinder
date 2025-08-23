@@ -4,9 +4,13 @@ import { createError } from './errorHandler';
 
 // Initialize Firebase Admin (should be done once in app startup)
 if (!admin.apps.length) {
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  if (!projectId) {
+    throw new Error('FIREBASE_PROJECT_ID environment variable is required');
+  }
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
-    projectId: process.env.FIREBASE_PROJECT_ID
+    projectId
   });
 }
 
