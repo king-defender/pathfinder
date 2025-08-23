@@ -1,8 +1,19 @@
 {
   "projects": {
-    "default": "your-firebase-project-id"
+    "default": "pathfinder-app",
+    "production": "pathfinder-app",
+    "staging": "pathfinder-app-staging",
+    "development": "pathfinder-app-dev"
   },
-  "targets": {},
+  "targets": {
+    "pathfinder-app": {
+      "hosting": {
+        "production": [
+          "pathfinder-app"
+        ]
+      }
+    }
+  },
   "etags": {},
   "dataconnectEmulatorConfig": {}
 }

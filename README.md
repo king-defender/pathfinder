@@ -192,7 +192,7 @@ docker run -p 3000:3000 pathfinder:latest
 gcloud run deploy pathfinder \
   --source . \
   --platform managed \
-  --region us-central1 \
+  --region asia-south1 \
   --allow-unauthenticated
 ```
 
