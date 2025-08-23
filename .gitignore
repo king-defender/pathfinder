@@ -7,7 +7,15 @@ yarn-error.log*
 
 # Build outputs
 dist/
-target/
+build/
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # OS files
 ehthumbs.db
@@ -29,3 +37,17 @@ coverage/
 .env.local
 .env.production.local
 .env.development.local
+
+# Temporary files
+tmp/
+temp/
+*.log
+.DS_Store
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
