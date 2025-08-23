@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest } from '../../middleware/auth';
+import { AuthenticatedRequest, normalizeUserRoles } from '../../middleware/auth';
 import { asyncHandler, createError } from '../../middleware/errorHandler';
 import { body, validationResult } from 'express-validator';
 import { PathfindingService } from '../../services/PathfindingService';

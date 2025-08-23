@@ -14,6 +14,15 @@ export interface AuthenticatedRequest extends Request {
   user?: admin.auth.DecodedIdToken;
 }
 
+// Helper function to normalize user roles into an array
+export const normalizeUserRoles = (role: string | string[] | undefined): string[] => {
+  return Array.isArray(role)
+    ? role
+    : role
+      ? [role]
+      : [];
+};
+
 export const authMiddleware = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -60,7 +69,7 @@ export const requireRole = (role: string) => {
       return next(createError('User not authenticated', 401));
     }
 
-    const userRoles = req.user.role || [];
+    const userRoles = normalizeUserRoles(req.user.role);
     if (!userRoles.includes(role) && !req.user.admin) {
       return next(createError('Insufficient permissions', 403));
     }
