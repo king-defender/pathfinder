@@ -5,6 +5,11 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { healthRoutes } from './api/routes/healthRoutes';
+import { pathRoutes } from './api/routes/pathRoutes';
+import { adviceRoutes } from './api/routes/adviceRoutes';
+import { roadmapRoutes } from './api/routes/roadmapRoutes';
+import { chatRoutes } from './api/routes/chatRoutes';
+import { apiHealthRoutes } from './api/routes/apiHealthRoutes';
 // Import auth middleware to ensure Firebase is initialized
 import './middleware/auth';
 
@@ -39,7 +44,14 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Health check endpoints
 app.use('/health', healthRoutes);
 
-// API routes placeholder
+// API routes
+app.use('/api/health', apiHealthRoutes);
+app.use('/api/path', pathRoutes);
+app.use('/api/advice', adviceRoutes);
+app.use('/api/roadmap', roadmapRoutes);
+app.use('/api/chat', chatRoutes);
+
+// API root endpoint
 app.get('/api', (_req, res) => {
   res.json({
     message: 'Pathfinder API',
@@ -47,7 +59,11 @@ app.get('/api', (_req, res) => {
     endpoints: {
       health: '/health',
       healthDetailed: '/health/detailed',
+      apiHealth: '/api/health',
       pathfinding: '/api/path/*',
+      advice: '/api/advice',
+      roadmap: '/api/roadmap',
+      chat: '/api/chat',
     },
   });
 });
@@ -80,7 +96,7 @@ app.use(
 );
 
 // Start server only when this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Pathfinder server running on port ${PORT}`);
     console.log(`📖 Health check: http://localhost:${PORT}/health`);
