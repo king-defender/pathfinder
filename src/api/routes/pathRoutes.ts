@@ -13,7 +13,16 @@ const pathfindingLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // limit each IP to 10 requests per minute
   message: { error: 'Too many pathfinding requests. Please try again later.' },
-  skip: (req: AuthenticatedRequest) => req.user?.role?.includes('premium') || false
+  skip: (req: AuthenticatedRequest) => {
+    const role = req.user?.role;
+    if (Array.isArray(role)) {
+      return role.includes('premium');
+    }
+    if (typeof role === 'string') {
+      return role.includes('premium');
+    }
+    return false;
+  }
 });
 
 // Validation rules for path calculation

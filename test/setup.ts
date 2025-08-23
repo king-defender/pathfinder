@@ -1,47 +1,48 @@
-// Test setup file
-import 'jest';
+// Test setup file for Vitest
+import { vi } from 'vitest';
 
 // Mock Firebase Admin SDK for testing
-jest.mock('firebase-admin', () => ({
-  apps: [],
-  initializeApp: jest.fn(),
-  credential: {
-    applicationDefault: jest.fn()
-  },
-  auth: () => ({
-    verifyIdToken: jest.fn().mockResolvedValue({
-      uid: 'test-user',
-      email: 'test@example.com',
-      email_verified: true
-    }),
-    deleteUser: jest.fn().mockResolvedValue(undefined),
-    setCustomUserClaims: jest.fn().mockResolvedValue(undefined)
-  }),
-  firestore: () => ({
-    collection: jest.fn().mockReturnThis(),
-    doc: jest.fn().mockReturnThis(),
-    add: jest.fn().mockResolvedValue({ id: 'test-doc-id' }),
-    set: jest.fn().mockResolvedValue(undefined),
-    get: jest.fn().mockResolvedValue({
-      exists: true,
-      data: () => ({
-        userId: 'test-user',
+vi.mock('firebase-admin', () => ({
+  default: {
+    apps: [],
+    initializeApp: vi.fn(),
+    credential: {
+      applicationDefault: vi.fn()
+    },
+    auth: () => ({
+      verifyIdToken: vi.fn().mockResolvedValue({
+        uid: 'test-user',
         email: 'test@example.com',
-        role: 'user'
-      })
+        email_verified: true
+      }),
+      deleteUser: vi.fn().mockResolvedValue(undefined),
+      setCustomUserClaims: vi.fn().mockResolvedValue(undefined)
     }),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
-    where: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    offset: jest.fn().mockReturnThis(),
-    FieldValue: {
-      serverTimestamp: jest.fn()
-    }
-  })
+    firestore: () => ({
+      collection: vi.fn().mockReturnThis(),
+      doc: vi.fn().mockReturnThis(),
+      add: vi.fn().mockResolvedValue({ id: 'test-doc-id' }),
+      set: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({
+          userId: 'test-user',
+          email: 'test@example.com',
+          role: 'user'
+        })
+      }),
+      update: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      offset: vi.fn().mockReturnThis(),
+      FieldValue: {
+        serverTimestamp: vi.fn()
+      }
+    })
+  }
 }));
-
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.FIREBASE_PROJECT_ID = 'test-project';
