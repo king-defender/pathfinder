@@ -20,8 +20,8 @@ export const authMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Skip auth in development if bypass is enabled
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    // Skip auth in test environment if bypass is enabled
+    if (process.env.NODE_ENV === 'test' && process.env.BYPASS_AUTH === 'true') {
       req.user = {
         uid: 'dev-user',
         email: 'dev@example.com',
