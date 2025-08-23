@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest } from '../../middleware/auth';
+import { AuthenticatedRequest, normalizeUserRoles } from '../../middleware/auth';
 import { asyncHandler, createError } from '../../middleware/errorHandler';
 import { body, validationResult } from 'express-validator';
 import { PathfindingService } from '../../services/PathfindingService';
@@ -13,7 +13,7 @@ const pathfindingLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // limit each IP to 10 requests per minute
   message: { error: 'Too many pathfinding requests. Please try again later.' },
-  skip: (req: AuthenticatedRequest) => req.user?.role?.includes('premium') || false
+  skip: (req: AuthenticatedRequest) => normalizeUserRoles(req.user?.role).includes('premium') || false
 });
 
 // Validation rules for path calculation
