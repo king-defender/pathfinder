@@ -173,6 +173,76 @@ npm run format
 
 ## Deployment
 
+### Production Deployment (Cloud Run + Firebase Hosting)
+
+Deploy the backend to Google Cloud Run and frontend to Firebase Hosting:
+
+```bash
+# Test deployment readiness
+npm run deploy:test
+
+# Run demo deployment (shows process without actual deployment)
+npm run deploy:demo
+
+# Real deployment (requires Google Cloud setup)
+npm run deploy:cloud-run    # Deploy backend to Cloud Run
+firebase deploy --only hosting  # Deploy frontend to Firebase Hosting
+```
+
+#### Quick Setup for Real Deployment
+
+1. **Google Cloud Setup**:
+   ```bash
+   gcloud projects create your-project-id
+   gcloud config set project your-project-id
+   gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+   ```
+
+2. **Firebase Setup**:
+   ```bash
+   firebase login
+   firebase init hosting firestore
+   ```
+
+3. **Environment Configuration**:
+   - Copy `.env.production.example` to `.env.production`
+   - Copy `frontend/.env.production.example` to `frontend/.env.production`
+   - Update values with your project configuration
+
+4. **Deploy**:
+   ```bash
+   ./scripts/deploy-cloud-run.sh
+   firebase deploy --only hosting
+   ```
+
+See [docs/deployment-guide.md](docs/deployment-guide.md) for detailed instructions.
+
+#### Deployment Architecture
+
+- **Backend**: Google Cloud Run (auto-scaling, pay-per-request)
+- **Frontend**: Firebase Hosting (CDN, automatic HTTPS)
+- **Database**: Firestore (NoSQL, real-time)
+- **Secrets**: Google Cloud Secret Manager
+- **Monitoring**: Cloud Run metrics + Firebase Analytics
+
+#### Environment Variables
+
+**Backend (.env.production)**:
+```env
+NODE_ENV=production
+PORT=8080
+GOOGLE_CLOUD_PROJECT_ID=your-project-id
+FIREBASE_PROJECT_ID=your-project-id
+CORS_ORIGIN=https://your-project-id.web.app
+```
+
+**Frontend (frontend/.env.production)**:
+```env
+VITE_API_BASE_URL=https://your-cloud-run-url
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_API_KEY=your-api-key
+```
+
 ### Local Development
 
 ```bash

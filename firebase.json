@@ -7,7 +7,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "dist",
+    "public": "frontend-dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -16,7 +16,10 @@
     "rewrites": [
       {
         "source": "/api/**",
-        "function": "api"
+        "run": {
+          "serviceId": "pathfinder-api",
+          "region": "asia-south1"
+        }
       },
       {
         "source": "**",
