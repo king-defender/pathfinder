@@ -34,6 +34,8 @@
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
     "deploy:functions": "firebase deploy --only functions",
     "deploy:cloud-run": "./scripts/deploy-cloud-run.sh",
+    "deploy:demo": "./scripts/demo-deploy.sh",
+    "deploy:test": "./scripts/test-deployment.sh",
     "deploy:all": "npm run build && firebase deploy",
     "emulators:start": "firebase emulators:start",
     "emulators:setup": "./scripts/setup-firebase.sh --emulators-only"
