@@ -32,9 +32,13 @@ cd pathfinder
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
+# Set up environment variables for backend (API)
+cp api/.env.example api/.env
+# Edit api/.env with your configuration if needed
+
+# Set up environment variables for frontend (App)
+cp app/.env.example app/.env
+# Edit app/.env with your configuration if needed
 
 # Start development server
 npm run dev
@@ -42,12 +46,42 @@ npm run dev
 
 ### Docker Deployment
 
+For local development with Docker:
+
+```bash
+# Set up environment variables (required for Docker)
+cp api/.env.example api/.env
+cp app/.env.example app/.env
+
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+This will start the following services:
+- **Backend API**: http://localhost:8080
+- **Frontend**: http://localhost:3000  
+- **Firebase Emulator UI**: http://localhost:4000
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
+
+#### Important Notes for Local Development
+
+The provided `.env.example` files contain **dummy values** that are safe for local development:
+- `demo-project-id` - Safe Firebase project ID that triggers mock mode
+- `demo-api-key` - Dummy API key values that won't access real services  
+- `GOOGLE_APPLICATION_CREDENTIALS` is commented out to prevent service account errors
+- `MOCK_EXTERNAL_APIS=true` ensures external API calls are mocked
+
+The application will start in **mock mode** for Firebase and external services, so no real credentials are needed for local development.
+
+For production deployment:
+
 ```bash
 # Build the Docker image
 docker build -t pathfinder .
 
 # Run the container
-docker run -p 3000:3000 pathfinder
+docker run -p 8080:8080 pathfinder
 ```
 
 ## Architecture
