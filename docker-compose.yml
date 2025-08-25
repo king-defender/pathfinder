@@ -1,24 +1,38 @@
 version: '3.8'
 
 services:
-  # Main application
+  # Main application (Backend API)
   app:
     build:
       context: .
       target: development
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/pathfinder
-      - REDIS_URL=redis://redis:6379
+      - "8080:8080"
+    env_file:
+      - api/.env
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       - postgres
       - redis
+    networks:
+      - pathfinder-network
+
+  # Frontend application
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    env_file:
+      - app/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - app
     networks:
       - pathfinder-network
 
@@ -54,7 +68,7 @@ services:
     command: sh -c "npm install -g firebase-tools && firebase emulators:start --only firestore,auth,hosting"
     ports:
       - "4000:4000"  # Emulator UI
-      - "8080:8080"  # Firestore
+      - "8081:8080"  # Firestore (changed to avoid conflict)
       - "9099:9099"  # Auth
       - "5000:5000"  # Hosting
     volumes:
