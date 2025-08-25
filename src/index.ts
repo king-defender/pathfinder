@@ -4,6 +4,15 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+
+// Load environment variables - try multiple locations for flexibility
+import { existsSync } from 'fs';
+if (existsSync('./api/.env')) {
+  dotenv.config({ path: './api/.env' });
+} else {
+  dotenv.config(); // Fallback to default .env location
+}
+
 import { healthRoutes } from './api/routes/healthRoutes';
 import { pathRoutes } from './api/routes/pathRoutes';
 import { adviceRoutes } from './api/routes/adviceRoutes';
@@ -12,9 +21,6 @@ import { chatRoutes } from './api/routes/chatRoutes';
 import { apiHealthRoutes } from './api/routes/apiHealthRoutes';
 // Import auth middleware to ensure Firebase is initialized
 import './middleware/auth';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;

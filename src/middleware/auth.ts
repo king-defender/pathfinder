@@ -6,7 +6,7 @@ import { createError } from './errorHandler';
 if (!admin.apps.length) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   
-  if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && !projectId) {
+  if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && (!projectId || projectId === 'demo-project-id')) {
     // Initialize with mock configuration for development/testing
     console.log('Firebase running in development/test mode with mock configuration');
     admin.initializeApp({
