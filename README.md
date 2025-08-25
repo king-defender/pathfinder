@@ -64,6 +64,16 @@ This will start the following services:
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
+#### Important Notes for Local Development
+
+The provided `.env.example` files contain **dummy values** that are safe for local development:
+- `demo-project-id` - Safe Firebase project ID that triggers mock mode
+- `demo-api-key` - Dummy API key values that won't access real services  
+- `GOOGLE_APPLICATION_CREDENTIALS` is commented out to prevent service account errors
+- `MOCK_EXTERNAL_APIS=true` ensures external API calls are mocked
+
+The application will start in **mock mode** for Firebase and external services, so no real credentials are needed for local development.
+
 For production deployment:
 
 ```bash
