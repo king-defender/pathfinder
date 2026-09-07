@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler, createError } from '../../middleware/errorHandler';
 import { AuthenticatedRequest } from '../../middleware/auth';
-import admin from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const router = Router();
 
@@ -16,10 +17,10 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
 
   try {
     // Verify the ID token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await getAuth().verifyIdToken(idToken);
     
     // Create user profile in Firestore
-    const userRef = admin.firestore().collection('users').doc(decodedToken.uid);
+    const userRef = getFirestore().collection('users').doc(decodedToken.uid);
     const userDoc = await userRef.get();
 
     if (userDoc.exists) {
@@ -30,8 +31,8 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
       uid: decodedToken.uid,
       email: decodedToken.email,
       emailVerified: decodedToken.email_verified,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+      lastLoginAt: FieldValue.serverTimestamp(),
       role: 'user',
       ...additionalData
     };
@@ -59,7 +60,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
 router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.uid;
 
-  const userRef = admin.firestore().collection('users').doc(userId);
+  const userRef = getFirestore().collection('users').doc(userId);
   const userDoc = await userRef.get();
 
   if (!userDoc.exists) {
@@ -85,9 +86,9 @@ router.patch('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Res
   const userId = req.user!.uid;
   const { displayName, preferences = {} } = req.body;
 
-  const userRef = admin.firestore().collection('users').doc(userId);
+  const userRef = getFirestore().collection('users').doc(userId);
   const updates: any = {
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    updatedAt: FieldValue.serverTimestamp()
   };
 
   if (displayName) {
@@ -133,9 +134,9 @@ router.post('/logout', asyncHandler(async (req: AuthenticatedRequest, res: Respo
   const userId = req.user!.uid;
 
   // Update last logout time
-  const userRef = admin.firestore().collection('users').doc(userId);
+  const userRef = getFirestore().collection('users').doc(userId);
   await userRef.update({
-    lastLogoutAt: admin.firestore.FieldValue.serverTimestamp()
+    lastLogoutAt: FieldValue.serverTimestamp()
   });
 
   res.json({
@@ -150,14 +151,14 @@ router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Re
 
   try {
     // Delete user data from Firestore
-    const batch = admin.firestore().batch();
+    const batch = getFirestore().batch();
     
     // Delete user profile
-    const userRef = admin.firestore().collection('users').doc(userId);
+    const userRef = getFirestore().collection('users').doc(userId);
     batch.delete(userRef);
 
     // Delete user's paths
-    const pathsQuery = await admin.firestore()
+    const pathsQuery = await getFirestore()
       .collection('paths')
       .where('userId', '==', userId)
       .get();
@@ -167,13 +168,13 @@ router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Re
     });
 
     // Delete user's analytics
-    const analyticsRef = admin.firestore().collection('analytics').doc(userId);
+    const analyticsRef = getFirestore().collection('analytics').doc(userId);
     batch.delete(analyticsRef);
 
     await batch.commit();
 
     // Delete user from Firebase Auth
-    await admin.auth().deleteUser(userId);
+    await getAuth().deleteUser(userId);
 
     res.json({
       success: true,
