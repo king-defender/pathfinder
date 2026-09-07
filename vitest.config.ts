@@ -7,6 +7,11 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: [path.resolve(__dirname, './test/setup.ts')],
+    // The /health/detailed integration tests deliberately hit real external checks (Google
+    // Auth credential lookup, a real Maps API fetch) with no credentials configured, and
+    // assert on the resulting 503/degraded response rather than mocking them out - so they
+    // need real network round-trip time to fail, not vitest's 5s default.
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
