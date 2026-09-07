@@ -14,7 +14,6 @@ if (existsSync('./api/.env')) {
 }
 
 import { healthRoutes } from './api/routes/healthRoutes';
-import { pathRoutes } from './api/routes/pathRoutes';
 import { adviceRoutes } from './api/routes/adviceRoutes';
 import { roadmapRoutes } from './api/routes/roadmapRoutes';
 import { chatRoutes } from './api/routes/chatRoutes';
@@ -52,7 +51,6 @@ app.use('/health', healthRoutes);
 
 // API routes
 app.use('/api/health', apiHealthRoutes);
-app.use('/api/path', pathRoutes);
 app.use('/api/advice', adviceRoutes);
 app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/chat', chatRoutes);
@@ -66,7 +64,6 @@ app.get('/api', (_req, res) => {
       health: '/health',
       healthDetailed: '/health/detailed',
       apiHealth: '/api/health',
-      pathfinding: '/api/path/*',
       advice: '/api/advice',
       roadmap: '/api/roadmap',
       chat: '/api/chat',
