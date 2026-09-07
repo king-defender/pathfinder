@@ -12,7 +12,6 @@ test.describe('New API Endpoints', () => {
       timestamp: expect.any(String),
       version: expect.any(String),
       services: {
-        pathfinding: 'available',
         advice: 'available',
         roadmap: 'available',
         chat: 'available'
@@ -154,7 +153,6 @@ test.describe('New API Endpoints', () => {
         health: '/health',
         healthDetailed: '/health/detailed',
         apiHealth: '/api/health',
-        pathfinding: '/api/path/*',
         advice: '/api/advice',
         roadmap: '/api/roadmap',
         chat: '/api/chat'

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/errorHandler';
-import admin from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const router = Router();
 
@@ -56,7 +57,7 @@ async function checkDatabase(): Promise<{ status: string; latency?: number; erro
     const start = Date.now();
     
     // Check Firestore connection by performing a simple read operation
-    const testCollection = admin.firestore().collection('_health_check');
+    const testCollection = getFirestore().collection('_health_check');
     await testCollection.limit(1).get();
     
     const latency = Date.now() - start;
@@ -107,7 +108,7 @@ async function checkExternalAPIs(): Promise<{ status: string; services: Record<s
 async function checkFirebase(): Promise<{ status: string; error?: string }> {
   try {
     // Check Firebase Admin connectivity by testing authentication service
-    await admin.auth().listUsers(1);
+    await getAuth().listUsers(1);
     
     return { status: 'healthy' };
   } catch (error) {

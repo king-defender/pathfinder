@@ -204,7 +204,7 @@ Goal: ${request.goal}`;
   }
 
   private buildChatPrompt(request: ChatRequest): string {
-    let prompt = `You are a helpful assistant for the Pathfinder application. You help users with navigation, pathfinding, career advice, and general questions.
+    let prompt = `You are a helpful assistant for the Pathfinder application, an AI career-coaching tool. You help users with career advice, learning roadmaps, and general questions about their professional development.
 
 Conversation History:`;
 
@@ -219,7 +219,7 @@ Conversation History:`;
       prompt += `\n\nAdditional Context: ${request.context}`;
     }
 
-    prompt += `\n\nRespond helpfully and conversationally to the latest user message. Keep your response concise but informative. If the user is asking about pathfinding or navigation, provide practical guidance. If they're asking about career or learning paths, provide structured advice.
+    prompt += `\n\nRespond helpfully and conversationally to the latest user message. Keep your response concise but informative. If they're asking about career or learning paths, provide structured advice.
 
 Format your response as JSON:
 {
@@ -317,11 +317,11 @@ Format your response as JSON:
   private generateMockChatResponse(request: ChatRequest): AIResponse {
     const lastMessage = request.messages[request.messages.length - 1];
     const mockContent = JSON.stringify({
-      response: `Thank you for your message: "${lastMessage.content}". This is a mock response for development. I understand you're asking about this topic, and I'm here to help with pathfinding, navigation, and general assistance.`,
+      response: `Thank you for your message: "${lastMessage.content}". This is a mock response for development. I understand you're asking about this topic, and I'm here to help with career advice and planning.`,
       suggestions: [
-        "Ask about pathfinding algorithms",
         "Get career roadmap advice",
-        "Learn about navigation techniques"
+        "Ask for resume or interview tips",
+        "Explore a new skill to learn next"
       ]
     });
 
