@@ -1,364 +1,135 @@
 # Pathfinder
 
-A comprehensive path-finding and navigation solution designed for efficient route planning and optimization.
+An AI career-coaching app: get advice, a structured learning roadmap toward a goal, and a
+chat assistant — backed by Gemini (via `@google/generative-ai`), with a Firebase-authenticated
+backend and a React frontend.
 
-## Overview
+The name is a holdover from an earlier, literal geo-routing pivot (A*/Dijkstra/BFS over
+lat/lng coordinates) that never became a real feature — the "algorithms" were straight-line
+interpolation between two points dressed up with fabricated metadata claiming a real graph
+search had run. That code has been removed entirely (see [Changelog](CHANGELOG.md)); this
+README describes what the app actually does today.
 
-Pathfinder is a modern application that provides intelligent path-finding algorithms and navigation services. Whether you're building a logistics system, game AI, or mapping application, Pathfinder offers the tools you need for optimal route calculation.
+## What's here
 
-## Features
+- **Advice** (`POST /api/advice`) — ask a question, get AI-generated advice with action items
+  and resources.
+- **Roadmap** (`POST /api/roadmap`) — describe a goal, get a phased learning plan (foundation →
+  practice → mastery) with milestones per phase.
+- **Chat** (`POST /api/chat`) — a conversational assistant with message history and follow-up
+  suggestions.
+- **Auth** (`/api/auth/*`) — Firebase-authenticated registration, profile, logout, account
+  deletion.
+- **Frontend** (`frontend/`) — React app: Login, Profile, Roadmap, Chat, Recommendations pages.
 
-- **Advanced Algorithms**: Implementation of A*, Dijkstra, and other pathfinding algorithms
-- **Real-time Processing**: Fast route calculation for dynamic environments
-- **Scalable Architecture**: Built to handle high-volume requests
-- **API-First Design**: RESTful API for easy integration
-- **Web Interface**: User-friendly frontend for visualization and testing
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- Docker (for containerized deployment)
-- Firebase CLI (for cloud deployment)
-
-### Installation
+## Quick start (mock mode — no API keys needed)
 
 ```bash
-# Clone the repository
 git clone https://github.com/king-defender/pathfinder.git
 cd pathfinder
-
-# Install dependencies
 npm install
 
-# Set up environment variables for backend (API)
-cp api/.env.example api/.env
-# Edit api/.env with your configuration if needed
-
-# Set up environment variables for frontend (App)
-cp app/.env.example app/.env
-# Edit app/.env with your configuration if needed
-
-# Start development server
-npm run dev
+cp .env.development .env
+npm run dev            # backend on :3000
+npm run dev:frontend   # frontend, separate terminal
 ```
 
-### Docker Deployment
+`.env.development` ships with `MOCK_EXTERNAL_APIS`-friendly defaults (no `GOOGLE_AI_API_KEY`
+needed — `VertexAIService` detects the missing/placeholder key and returns clearly-labeled
+mock responses instead of calling Gemini for real). Verified directly: advice, roadmap, and
+chat all respond correctly with mock data with zero credentials configured.
 
-For local development with Docker:
+### Connecting real Gemini output
+
+Set a real key and restart:
 
 ```bash
-# Set up environment variables (required for Docker)
-cp api/.env.example api/.env
-cp app/.env.example app/.env
-
-# Build and run with Docker Compose
-docker-compose up --build
+GOOGLE_AI_API_KEY=your_real_key
 ```
 
-This will start the following services:
-- **Backend API**: http://localhost:8080
-- **Frontend**: http://localhost:3000  
-- **Firebase Emulator UI**: http://localhost:4000
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
-
-#### Important Notes for Local Development
-
-The provided `.env.example` files contain **dummy values** that are safe for local development:
-- `demo-project-id` - Safe Firebase project ID that triggers mock mode
-- `demo-api-key` - Dummy API key values that won't access real services  
-- `GOOGLE_APPLICATION_CREDENTIALS` is commented out to prevent service account errors
-- `MOCK_EXTERNAL_APIS=true` ensures external API calls are mocked
-
-The application will start in **mock mode** for Firebase and external services, so no real credentials are needed for local development.
-
-For production deployment:
-
-```bash
-# Build the Docker image
-docker build -t pathfinder .
-
-# Run the container
-docker run -p 8080:8080 pathfinder
-```
-
-## Architecture
-
-### Backend API
-- **Framework**: Node.js with Express/Fastify
-- **Database**: Firestore for data persistence
-- **Authentication**: Firebase Auth
-- **Deployment**: Google Cloud Run
-
-### Frontend UI
-- **Framework**: React/Vue.js
-- **Styling**: TailwindCSS
-- **Deployment**: Firebase Hosting
-
-### Core Components
-- **Path Engine**: Core pathfinding algorithms
-- **Route Optimizer**: Performance optimization layer
-- **Cache Manager**: Redis-based caching for frequent queries
-- **API Gateway**: Request routing and rate limiting
+`VertexAIService`'s mock-mode check goes away the moment a real, non-placeholder key is
+present — no other code change needed.
 
 ## API Reference
 
-### Endpoints
-
 ```
-GET  /api/path/find    - Calculate optimal path
-POST /api/path/batch   - Batch path calculations
-GET  /api/health       - Service health check
-```
-
-### Example Usage
-
-```javascript
-// Find path between two points
-const response = await fetch('/api/path/find', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    start: { lat: 40.7128, lng: -74.0060 },
-    end: { lat: 40.7589, lng: -73.9851 },
-    algorithm: 'astar'
-  })
-});
-
-const path = await response.json();
+POST /api/advice   { query, context?, preferences? }        → advice + action items
+POST /api/roadmap  { goal, timeframe?, skills?, experience? } → phased learning plan
+POST /api/chat     { messages: [{ role, content }], context? } → assistant reply + suggestions
+POST /api/auth/register  { idToken, additionalData? }
+GET  /api/auth/profile   (requires Authorization: Bearer <idToken>)
+GET  /health              — basic status
+GET  /health/detailed     — includes real Firestore/Firebase Auth/Maps API checks (will show
+                             "unhealthy"/"degraded" without real credentials - that's the
+                             checks working correctly, not a bug)
 ```
 
 ## Configuration
 
-### Environment Variables
+| Variable | Purpose |
+|---|---|
+| `PORT` | Server port (default `3000`) |
+| `NODE_ENV` | `development` / `test` / `production` |
+| `FIREBASE_PROJECT_ID` | Firebase project for Auth + Firestore |
+| `GOOGLE_AI_API_KEY` | Gemini API key — omit or leave as `mock_development_key` for mock mode |
+| `GOOGLE_MAPS_API_KEY` | Used only by `/health/detailed`'s external-API check |
+| `BYPASS_AUTH` | Skips auth — **only takes effect when `NODE_ENV=test`**, deliberately not in `development`, so a misconfigured deployment can't silently disable authentication |
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | `3000` |
-| `NODE_ENV` | Environment mode | `development` |
-| `FIREBASE_PROJECT_ID` | Firebase project ID | - |
-| `DATABASE_URL` | Database connection string | - |
-| `REDIS_URL` | Redis cache URL | - |
-
-### Firebase Configuration
-
-1. Create a Firebase project
-2. Enable Firestore and Authentication
-3. Download service account key
-4. Set up security rules (see `firestore.rules`)
-
-## Development
-
-### Project Structure
-
-```
-pathfinder/
-├── src/
-│   ├── api/          # API routes and controllers
-│   ├── algorithms/   # Pathfinding algorithms
-│   ├── models/       # Data models
-│   ├── services/     # Business logic
-│   └── utils/        # Utility functions
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── dist/
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-├── deployment/
-│   ├── docker/
-│   ├── kubernetes/
-│   └── scripts/
-└── docs/
-```
-
-### Testing
+## Testing
 
 ```bash
-# Run unit tests
-npm run test
-
-# Run integration tests
-npm run test:integration
-
-# Run end-to-end tests
-npm run test:e2e
-
-# Generate coverage report
-npm run test:coverage
+npm run type-check
+npm test              # vitest - unit + integration
+npm run test:e2e       # playwright, needs the server running
 ```
 
-### Linting and Formatting
+`/health/detailed`'s integration tests deliberately exercise real external checks with no
+credentials configured and assert on the resulting degraded response, rather than mocking
+them out - they need real network round-trip time, not a fast fail (`testTimeout: 15000` in
+`vitest.config.ts` accounts for this).
 
-```bash
-# Run linter
-npm run lint
+## Architecture
 
-# Fix linting issues
-npm run lint:fix
-
-# Format code
-npm run format
 ```
-
-## Deployment
-
-### Production Deployment (Cloud Run + Firebase Hosting)
-
-Deploy the backend to Google Cloud Run and frontend to Firebase Hosting:
-
-```bash
-# Test deployment readiness
-npm run deploy:test
-
-# Run demo deployment (shows process without actual deployment)
-npm run deploy:demo
-
-# Real deployment (requires Google Cloud setup)
-npm run deploy:cloud-run    # Deploy backend to Cloud Run
-firebase deploy --only hosting  # Deploy frontend to Firebase Hosting
-```
-
-#### Quick Setup for Real Deployment
-
-1. **Google Cloud Setup**:
-   ```bash
-   gcloud projects create your-project-id
-   gcloud config set project your-project-id
-   gcloud services enable run.googleapis.com artifactregistry.googleapis.com
-   ```
-
-2. **Firebase Setup**:
-   ```bash
-   firebase login
-   firebase init hosting firestore
-   ```
-
-3. **Environment Configuration**:
-   - Copy `.env.production.example` to `.env.production`
-   - Copy `frontend/.env.production.example` to `frontend/.env.production`
-   - Update values with your project configuration
-
-4. **Deploy**:
-   ```bash
-   ./scripts/deploy-cloud-run.sh
-   firebase deploy --only hosting
-   ```
-
-See [docs/deployment-guide.md](docs/deployment-guide.md) for detailed instructions.
-
-#### Deployment Architecture
-
-- **Backend**: Google Cloud Run (auto-scaling, pay-per-request)
-- **Frontend**: Firebase Hosting (CDN, automatic HTTPS)
-- **Database**: Firestore (NoSQL, real-time)
-- **Secrets**: Google Cloud Secret Manager
-- **Monitoring**: Cloud Run metrics + Firebase Analytics
-
-#### Environment Variables
-
-**Backend (.env.production)**:
-```env
-NODE_ENV=production
-PORT=8080
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-FIREBASE_PROJECT_ID=your-project-id
-CORS_ORIGIN=https://your-project-id.web.app
-```
-
-**Frontend (frontend/.env.production)**:
-```env
-VITE_API_BASE_URL=https://your-cloud-run-url
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_API_KEY=your-api-key
-```
-
-### Local Development
-
-```bash
-npm run dev
-```
-
-### Production Deployment
-
-#### Docker
-```bash
-docker build -t pathfinder:latest .
-docker run -p 3000:3000 pathfinder:latest
-```
-
-#### Google Cloud Run
-```bash
-gcloud run deploy pathfinder \
-  --source . \
-  --platform managed \
-  --region asia-south1 \
-  --allow-unauthenticated
-```
-
-#### Firebase Hosting (Frontend)
-```bash
-npm run build
-firebase deploy --only hosting
+src/
+├── api/routes/       auth, advice, roadmap, chat, health
+├── middleware/        Firebase-auth middleware, error handling
+└── services/          VertexAIService (Gemini + mock mode)
+frontend/               React app - Login, Profile, Roadmap, Chat, Recommendations
 ```
 
 ## Security
 
-### Authentication
-- Firebase Authentication integration
-- JWT token validation
-- Role-based access control (RBAC)
+- Firebase Authentication (ID token verification via `firebase-admin/auth`)
+- Rate limiting, tighter on the AI endpoints (5/min advice, 3/min roadmap) than general API
+  traffic
+- Helmet security headers, input validation via `express-validator`
+- `BYPASS_AUTH` is test-environment-only by design (see Configuration above)
 
-### Firestore Security Rules
-See `firestore.rules` for database security configuration.
+## Deployment
 
-### API Security
-- Rate limiting
-- Input validation
-- CORS configuration
-- Helmet.js security headers
+Designed for Google Cloud Run (backend) + Firebase Hosting (frontend):
 
-## Performance
+```bash
+npm run build
+npm run deploy:cloud-run    # backend
+firebase deploy --only hosting   # frontend
+```
 
-### Optimization Strategies
-- Algorithm selection based on use case
-- Caching frequently requested routes
-- Connection pooling for database
-- CDN for static assets
-
-### Monitoring
-- Application metrics with Prometheus
-- Error tracking with Sentry
-- Performance monitoring with New Relic
+Needs a real Firebase project (`firebase init hosting firestore`) and Google Cloud project
+with Cloud Run enabled — see `DEPLOYMENT.md` for the full walkthrough.
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow ESLint configuration
-- Write tests for new features
-- Update documentation as needed
-- Follow semantic versioning
+3. Commit your changes, following ESLint/Prettier config
+4. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/king-defender/pathfinder/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/king-defender/pathfinder/discussions)
+MIT - see [LICENSE](LICENSE).
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
+See [CHANGELOG.md](CHANGELOG.md).
