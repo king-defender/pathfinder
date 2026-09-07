@@ -11,7 +11,6 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     version: '1.0.0',
     services: {
-      pathfinding: 'available',
       advice: 'available',
       roadmap: 'available',
       chat: 'available'
