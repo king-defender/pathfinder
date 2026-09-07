@@ -1,29 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import admin from 'firebase-admin';
+import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
+import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 import { createError } from './errorHandler';
 
 // Initialize Firebase Admin (should be done once in app startup)
-if (!admin.apps.length) {
+if (!getApps().length) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
-  
+
   if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && (!projectId || projectId === 'demo-project-id')) {
     // Initialize with mock configuration for development/testing
     console.log('Firebase running in development/test mode with mock configuration');
-    admin.initializeApp({
+    initializeApp({
       projectId: 'pathfinder-dev-mock'
     });
   } else if (!projectId) {
     throw new Error('FIREBASE_PROJECT_ID environment variable is required');
   } else {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
+    initializeApp({
+      credential: applicationDefault(),
       projectId
     });
   }
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: admin.auth.DecodedIdToken;
+  user?: DecodedIdToken;
 }
 
 // Helper function to normalize user roles into an array
@@ -41,13 +42,15 @@ export const authMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Skip auth in test environment or development if bypass is enabled
-    if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && process.env.BYPASS_AUTH === 'true') {
+    // Skip auth only in the test environment, and only with the flag explicitly set.
+    // Deliberately excludes 'development' - a misconfigured deployment that left NODE_ENV
+    // as 'development' with BYPASS_AUTH set would otherwise silently disable auth entirely.
+    if (process.env.NODE_ENV === 'test' && process.env.BYPASS_AUTH === 'true') {
       req.user = {
         uid: 'dev-user',
         email: 'dev@example.com',
         email_verified: true
-      } as admin.auth.DecodedIdToken;
+      } as DecodedIdToken;
       return next();
     }
 
@@ -62,7 +65,7 @@ export const authMiddleware = async (
     }
 
     // Verify the token
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await getAuth().verifyIdToken(token);
     req.user = decodedToken;
 
     next();
